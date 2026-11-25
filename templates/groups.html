@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Groups{% endblock %}
+{% block content %}
+  <h1>Groups</h1>
+
+  {% if groups %}
+    {% for group in groups %}
+      <section class="card">
+        <div class="section-head">
+          <h2>{{ group['name'] }} <small>({{ group['date'] }})</small></h2>
+          <a class="btn-link" href="{{ url_for('add_members', group_id=group['id']) }}">Add members</a>
+        </div>
+
+        {% set group_members = members.get(group['id'], []) %}
+        {% if group_members %}
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Phone</th></tr>
+              </thead>
+              <tbody>
+                {% for m in group_members %}
+                  <tr><td>{{ m['name'] }}</td><td>{{ m['phone'] }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="empty">No members yet. Add the first one above.</p>
+        {% endif %}
+      </section>
+    {% endfor %}
+  {% else %}
+    <section class="card">
+      <p>No groups yet. <a href="{{ url_for('create_group') }}">Create one</a>.</p>
+    </section>
+  {% endif %}
+{% endblock %}

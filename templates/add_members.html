@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Add Members - {{ group.name }}{% endblock %}
+{% block content %}
+  <h1>Add members to {{ group.name }} <small>({{ group.date }})</small></h1>
+
+  <section class="card">
+    <form method="post" class="form">
+      <label>Name
+        <input type="text" name="name" value="{{ name }}" required>
+      </label>
+      <label>Phone
+        <input type="tel" name="phone" value="{{ phone }}" placeholder="+2547XXXXXXXX" pattern="\+[1-9][0-9]{7,14}" required>
+        <span class="hint">International format, starting with + and country code.</span>
+      </label>
+      <button type="submit" class="btn">Add member</button>
+    </form>
+    <a class="btn-link" href="{{ url_for('groups_list') }}">Back to groups</a>
+  </section>
+{% endblock %}

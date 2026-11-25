@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Create Group{% endblock %}
+{% block content %}
+  <h1>Create group</h1>
+
+  <section class="card">
+    <form method="post" class="form">
+      <label>Name
+        <input type="text" name="name" value="{{ name }}" required>
+      </label>
+      <label>Date
+        <input type="date" name="date" value="{{ date }}" required>
+      </label>
+      <button type="submit" class="btn">Create group</button>
+    </form>
+  </section>
+{% endblock %}
