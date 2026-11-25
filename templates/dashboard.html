@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - {{ group['name'] }}{% endblock %}
+{% block content %}
+  <h1>{{ group['name'] }} <small>({{ group['date'] }})</small></h1>
+
+  <section class="card">
+    <div class="section-head">
+      <h2>Latest delivery status</h2>
+      <a class="btn-link" href="{{ url_for('send_alert', group_id=group['id']) }}">Send alert</a>
+    </div>
+
+    {% if rows %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Phone</th><th>Status</th><th>Cost</th><th>Message ID</th><th>Sent at</th></tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+              <tr>
+                <td>{{ r['name'] }}</td>
+                <td>{{ r['phone'] }}</td>
+                <td>{{ r['status'] or 'Not sent' }}</td>
+                <td>{{ r['cost'] or '-' }}</td>
+                <td>{{ r['message_id'] or '-' }}</td>
+                <td>{{ r['created_at'] or '-' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="empty">No members yet. <a href="{{ url_for('add_members', group_id=group['id']) }}">Add members</a> first.</p>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Send Alert{% endblock %}
+{% block content %}
+  <h1>Send alert</h1>
+
+  <section class="card">
+    <form method="post" class="form">
+      <label>Group
+        <select name="group_id" required>
+          <option value="">Choose a group</option>
+          {% for g in groups %}
+            <option value="{{ g['id'] }}" {% if group_id|string == g['id']|string %}selected{% endif %}>{{ g['name'] }} ({{ g['date'] }})</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Message
+        <textarea name="message" rows="4" required>{{ message }}</textarea>
+        <span class="hint">Sent as one message to every member of the group.</span>
+      </label>
+      <button type="submit" class="btn">Send alert</button>
+    </form>
+  </section>
+{% endblock %}

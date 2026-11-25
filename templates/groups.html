@@ -8,7 +8,10 @@
       <section class="card">
         <div class="section-head">
           <h2>{{ group['name'] }} <small>({{ group['date'] }})</small></h2>
-          <a class="btn-link" href="{{ url_for('add_members', group_id=group['id']) }}">Add members</a>
+          <div>
+            <a class="btn-link" href="{{ url_for('add_members', group_id=group['id']) }}">Add members</a>
+            <a class="btn-link" href="{{ url_for('group_dashboard', group_id=group['id']) }}">Dashboard</a>
+          </div>
         </div>
 
         {% set group_members = members.get(group['id'], []) %}
