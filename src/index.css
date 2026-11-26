@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", ui-sans-serif, sans-serif;
+
+  /* Brand palette */
+  --color-forest: #123d32;
+  --color-forest-deep: #00261e;
+  --color-forest-soft: #1c4a3e;
+  --color-ivory: #f8f7f2;
+  --color-gold: #d9a441;
+  --color-gold-soft: #ffc55f;
+  --color-gold-deep: #7d5700;
+  --color-charcoal: #202824;
+  --color-emerald: #10b981;
+
+  /* Surfaces */
+  --color-surface: #f3fbf5;
+  --color-surface-low: #edf6ef;
+  --color-surface-mid: #e7f0e9;
+  --color-surface-high: #e2eae4;
+  --color-ink: #151d19;
+  --color-ink-muted: #414845;
+  --color-line: #c0c8c4;
+  --color-mint: #bfecdc;
+  --color-mint-dim: #a4d0c0;
+  --color-sand: #ffdeaa;
+}
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body { @apply bg-surface text-ink font-sans; }
+  h1, h2, h3, h4 { @apply font-display; }
+}
+
+@utility tabular { font-variant-numeric: tabular-nums; }
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+@utility card { @apply bg-white rounded-xl border border-surface-high shadow-[0_1px_2px_rgba(18,61,50,0.04)]; }
+@utility eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted; }
+
+@keyframes ping-soft { 75%, 100% { transform: scale(2.2); opacity: 0; } }
+.animate-ping-soft { animation: ping-soft 1.8s cubic-bezier(0,0,.2,1) infinite; }
