@@ -1,36 +1,86 @@
 {% extends "base.html" %}
-{% block title %}Dashboard - {{ group['name'] }}{% endblock %}
+{% block title %}Dashboard - {{ group['name'] | display_name }}{% endblock %}
 {% block content %}
-  <h1>{{ group['name'] }} <small>({{ group['date'] }})</small></h1>
+  <div class="section-head page-head">
+    <h1>{{ group['name'] | display_name }} <small>({{ group['date'] | friendly_date }})</small></h1>
+    <a class="btn btn-inline" href="{{ url_for('send_alert', group_id=group['id']) }}">Send alert</a>
+  </div>
 
-  <section class="card">
-    <div class="section-head">
-      <h2>Latest delivery status</h2>
-      <a class="btn-link" href="{{ url_for('send_alert', group_id=group['id']) }}">Send alert</a>
+  {% if rows %}
+    {% set total = rows | length %}
+    {% set sent = rows | selectattr('status', 'equalto', 'Success') | list | length %}
+    {% set attention = rows | selectattr('status') | rejectattr('status', 'equalto', 'Success') | list | length %}
+
+    <div class="summary">
+      <div class="stat-card">
+        <div class="stat-value">{{ total }}</div>
+        <div class="stat-label">Total people</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value stat-ok">{{ sent }}</div>
+        <div class="stat-label">Sent</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value {% if attention %}stat-error{% endif %}">{{ attention }}</div>
+        <div class="stat-label">Needing attention</div>
+      </div>
     </div>
 
-    {% if rows %}
+    <section class="card">
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Name</th><th>Phone</th><th>Status</th><th>Cost</th><th>Message ID</th><th>Sent at</th></tr>
+            <tr><th>Name</th><th>Phone</th><th>Status</th><th>Last sent</th></tr>
           </thead>
           <tbody>
             {% for r in rows %}
               <tr>
-                <td>{{ r['name'] }}</td>
-                <td>{{ r['phone'] }}</td>
-                <td>{{ r['status'] or 'Not sent' }}</td>
-                <td>{{ r['cost'] or '-' }}</td>
-                <td>{{ r['message_id'] or '-' }}</td>
-                <td>{{ r['created_at'] or '-' }}</td>
+                <td>{{ r['name'] | display_name }}</td>
+                <td>{{ r['phone'] | display_phone }}</td>
+                <td>
+                  {% if r['status'] == 'Success' %}
+                    <span class="badge badge-ok">&#10003; Sent</span>
+                  {% elif r['status'] == 'InvalidPhoneNumber' %}
+                    <span class="badge badge-error">Couldn't send</span>
+                    <div class="reason">Check phone number</div>
+                  {% elif r['status'] %}
+                    <span class="badge badge-error">Couldn't send</span>
+                    <div class="reason">Try again.</div>
+                  {% else %}
+                    <span class="muted">Not sent yet</span>
+                  {% endif %}
+                </td>
+                <td>{{ r['created_at'] | friendly_timestamp }}</td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
-    {% else %}
+
+      <details class="details">
+        <summary>Details</summary>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Gateway status</th><th>Message ID</th><th>Cost</th></tr>
+            </thead>
+            <tbody>
+              {% for r in rows %}
+                <tr>
+                  <td>{{ r['name'] | display_name }}</td>
+                  <td>{{ r['status'] or '-' }}</td>
+                  <td>{{ r['message_id'] or '-' }}</td>
+                  <td>{{ r['cost'] or '-' }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+  {% else %}
+    <section class="card">
       <p class="empty">No members yet. <a href="{{ url_for('add_members', group_id=group['id']) }}">Add members</a> first.</p>
-    {% endif %}
-  </section>
+    </section>
+  {% endif %}
 {% endblock %}

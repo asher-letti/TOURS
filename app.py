@@ -1,5 +1,6 @@
 import re
 from datetime import date as date_cls
+from datetime import datetime, timedelta, timezone
 
 from flask import Flask, flash, redirect, render_template, request, url_for
 
@@ -12,6 +13,44 @@ db.init_db()
 
 # International format: '+' followed by country code and number, 8-15 digits total.
 PHONE_RE = re.compile(r"^\+[1-9]\d{7,14}$")
+
+
+@app.template_filter("friendly_date")
+def friendly_date(value):
+    """'2026-03-16' -> '16 March 2026'."""
+    d = date_cls.fromisoformat(value)
+    return f"{d.day} {d.strftime('%B %Y')}"
+
+
+@app.template_filter("display_name")
+def display_name(value):
+    """'ann  OTIENO' -> 'Ann Otieno' (display only; stored value is unchanged)."""
+    return " ".join(value.split()).title()
+
+
+@app.template_filter("display_phone")
+def display_phone(value):
+    """'+254711111111' -> '+254 711 111 111'. Other formats are returned as-is."""
+    m = re.fullmatch(r"\+254(\d{3})(\d{3})(\d{3})", value or "")
+    if m:
+        return f"+254 {m.group(1)} {m.group(2)} {m.group(3)}"
+    return value
+
+
+@app.template_filter("friendly_timestamp")
+def friendly_timestamp(value):
+    """Stored UTC timestamp -> 'Today at 9:19 AM', 'Yesterday at ...', or '16 March 2026 at ...'."""
+    if not value:
+        return "-"
+    utc = datetime.strptime(value, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+    local = utc.astimezone()
+    time_part = local.strftime("%I:%M %p").lstrip("0")
+    today = datetime.now().astimezone().date()
+    if local.date() == today:
+        return f"Today at {time_part}"
+    if local.date() == today - timedelta(days=1):
+        return f"Yesterday at {time_part}"
+    return f"{friendly_date(local.date().isoformat())} at {time_part}"
 
 
 @app.route("/")
@@ -116,7 +155,7 @@ def send_alert():
             results = send_bulk_sms(phones, message)
         except SMSError as exc:
             # Nothing was recorded because the request did not complete.
-            flash(f"Alert not sent: {exc}", "error")
+            flash("The alert couldn't be sent. Please try again in a moment.", "error")
             return render_template(
                 "send_alert.html", groups=groups, group_id=group_id_raw, message=message
             ), 502
@@ -127,10 +166,15 @@ def send_alert():
         db.save_alert(group_id, message, deliveries)
 
         accepted = sum(1 for r in results if r["status"] == "Success")
-        flash(
-            f"Alert sent to {len(results)} recipient(s); {accepted} accepted by the gateway.",
-            "success",
-        )
+        total = len(results)
+        if accepted == total:
+            noun = "person" if accepted == 1 else "people"
+            flash(f"Message sent to {accepted} {noun}.", "success")
+        else:
+            flash(
+                f"Sent to {accepted} of {total} people.",
+                "success" if accepted else "error",
+            )
         return redirect(url_for("group_dashboard", group_id=group_id))
 
     selected_id = request.args.get("group_id", "")
